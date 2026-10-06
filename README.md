@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🍽️ Restaurante Monster
+# Restaurante Monster
 
 ### Sistema web de gestión de restaurante: pedidos, facturación, inventario y carta digital con tres roles de usuario
 
@@ -10,17 +10,56 @@
 [![MongoDB](https://img.shields.io/badge/MongoDB-NoSQL-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
 [![Bootstrap](https://img.shields.io/badge/Bootstrap-5-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
 
+<img src="media/menu.jpg" alt="Carta digital del restaurante" width="90%">
+
 </div>
 
 ---
 
-## 📖 Descripción
+## Descripción
 
 **Restaurante Monster** digitaliza la operación diaria de un restaurante: el **cliente** arma su pedido desde la carta en línea, el **mesero** toma pedidos en mesa y factura, y el **administrador** controla platos, bebidas, inventario, empleados y reportes de ventas. Todo sobre **ASP.NET Core MVC** con persistencia **NoSQL en MongoDB**.
 
-## ✨ Funcionalidades por rol
+## Capturas
 
-| 👤 Cliente | 🧑‍🍳 Mesero | 🛠️ Administrador |
+<table>
+  <tr>
+    <td width="50%"><img src="media/login.jpg" alt="Inicio de sesión"></td>
+    <td width="50%"><img src="media/menu_items.jpg" alt="Selección de platos"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Inicio de sesión</sub></td>
+    <td align="center"><sub>Selección de platos</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="media/carrito.jpg" alt="Carrito de compras"></td>
+    <td width="50%"><img src="media/factura.jpg" alt="Factura del cliente"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Carrito de compras</sub></td>
+    <td align="center"><sub>Factura del cliente</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="media/tomar_pedido.jpg" alt="Toma de pedido del mesero"></td>
+    <td width="50%"><img src="media/dashboard_admin.jpg" alt="Dashboard del administrador"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Toma de pedido del mesero</sub></td>
+    <td align="center"><sub>Dashboard del administrador</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="media/stock.jpg" alt="Control de inventario"></td>
+    <td width="50%"><img src="media/reportes.jpg" alt="Reportes de ventas"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Control de inventario</sub></td>
+    <td align="center"><sub>Reportes de ventas</sub></td>
+  </tr>
+</table>
+
+## Funcionalidades por rol
+
+|  Cliente |  Mesero |  Administrador |
 |---|---|---|
 | Registro e inicio de sesión | Dashboard de pedidos | Dashboard general |
 | Carta digital por categorías (entradas, sopas, platos fuertes, postres, bebidas) | Toma de pedidos por mesa | CRUD de platos, bebidas y categorías |
@@ -29,7 +68,7 @@
 | | **Alertas de stock bajo** | Historial de facturas y detalle |
 | | | **Reportes** de ventas |
 
-## 🛠️ Tecnologías y prácticas
+## Tecnologías y prácticas
 
 - **ASP.NET Core 8 MVC** con vistas Razor, layouts separados por tipo de usuario y *partial* de navegación.
 - **MongoDB.Driver 2.28** con patrón **DAO** por colección (`DAOPlato`, `DAOPedido`, `DAOFactura`, `DAOStock`...).
@@ -39,7 +78,7 @@
 - Subida de imágenes de platos con soporte **AVIF** y **WEBP**.
 - Configuración externa en `appsettings.json` (cadena de conexión y nombre de la base).
 
-## 🏗️ Arquitectura
+## Arquitectura
 
 ```mermaid
 flowchart LR
@@ -67,7 +106,7 @@ RestauranteMonster/
 └── database/      Script de creación de colecciones, índices y datos iniciales
 ```
 
-## 🗄️ Modelo de datos (MongoDB)
+## Modelo de datos (MongoDB)
 
 ```mermaid
 erDiagram
@@ -83,7 +122,7 @@ erDiagram
 
 Colecciones: `usuarios`, `roles`, `clientes`, `platos`, `tipos_plato`, `bebidas`, `stocks`, `pedidos`, `facturas`, `contadores`.
 
-## 🚀 Ejecución local
+## Ejecución local
 
 **Requisitos:** .NET 8 SDK y MongoDB 6+ (local o Atlas).
 
@@ -96,13 +135,13 @@ cd Restaurante-Monster
 mongosh < database/restaurante_monster_mongo.js
 
 # 3. (Opcional) cambiar la cadena de conexión en appsettings.json
-#    o con la variable de entorno ConnectionStrings__MongoConnection
+# o con la variable de entorno ConnectionStrings__MongoConnection
 
 # 4. Ejecutar
 dotnet run
 ```
 
-## 👤 Autor
+## Autor
 
 **Marco Adrián Padilla Triviño** · Estudiante de Ingeniería de Software, Universidad de las Fuerzas Armadas ESPE
 
