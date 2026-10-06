@@ -1,0 +1,51 @@
+@using RestauranteMonster.Models
+@{
+    ViewData["Title"] = "Dashboard Mesero";
+    var stats     = ViewBag.Estadisticas as Dictionary<string, double> ?? new Dictionary<string, double>();
+    var stockBajo = ViewBag.StockBajo    as List<Stock>               ?? new List<Stock>();
+    int pedidos   = (int)(stats.ContainsKey("pedidos") ? stats["pedidos"] : 0);
+    double ventas = stats.ContainsKey("ventas") ? stats["ventas"] : 0;
+}
+
+<div class="topbar">
+    <h1>📊 Mi Dashboard</h1>
+    <div class="topbar-right">
+        @if (stockBajo.Any())
+        {
+            <a href="/Mesero/AlertaStock" class="badge-alerta">⚠️ @stockBajo.Count ítems con stock bajo</a>
+        }
+    </div>
+</div>
+
+<div style="padding:30px">
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">🛒</div>
+            <div class="stat-info">
+                <h3>@pedidos</h3>
+                <p>Mis pedidos hoy</p>
+            </div>
+        </div>
+        <div class="stat-card verde">
+            <div class="stat-icon">💰</div>
+            <div class="stat-info">
+                <h3>$@ventas.ToString("F2")</h3>
+                <p>Ventas atendidas hoy</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" style="margin-top:24px">
+        <div class="card-header">
+            <h2 class="card-title">Acciones rápidas</h2>
+        </div>
+        <div style="padding:20px;display:flex;gap:12px;flex-wrap:wrap">
+            <a href="/Mesero/TomarPedido" class="btn btn-primary">🍽️ Tomar Pedido</a>
+            <a href="/Mesero/RegistrarCliente" class="btn btn-secondary">👤 Registrar Cliente</a>
+            @if (stockBajo.Any())
+            {
+                <a href="/Mesero/AlertaStock" class="btn btn-warning">⚠️ Ver Stock Bajo</a>
+            }
+        </div>
+    </div>
+</div>

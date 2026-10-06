@@ -1,0 +1,119 @@
+@using RestauranteMonster.Models
+@{
+    ViewData["Title"] = "Platos";
+    var platos = ViewBag.Platos as List<Plato>     ?? new List<Plato>();
+    var tipos  = ViewBag.Tipos  as List<TipoPlato> ?? new List<TipoPlato>();
+}
+
+<div class="topbar">
+    <h1>🍽️ Platos</h1>
+    <div class="topbar-right">
+        <button onclick="abrirNuevo()" class="btn btn-primary">+ Nuevo Plato</button>
+    </div>
+</div>
+
+<div style="padding:30px">
+    @if (TempData["Success"] != null) { <div class="alert alert-success">✅ @TempData["Success"]</div> }
+    @if (TempData["Error"]   != null) { <div class="alert alert-error">⚠️ @TempData["Error"]</div> }
+
+    <div class="card">
+        <div class="tabla-wrapper">
+            <table>
+                <thead>
+                    <tr><th>Imagen</th><th>Nombre</th><th>Categoría</th><th>Precio</th><th>Estado</th><th>Acciones</th></tr>
+                </thead>
+                <tbody>
+                @foreach (var p in platos)
+                {
+                    <tr>
+                        <td><img src="/@p.Imagen" class="img-tabla" onerror="this.style.display='none'" /></td>
+                        <td>
+                            <strong>@p.Nombre</strong>
+                            @if (!string.IsNullOrEmpty(p.Descripcion))
+                            { <br /><small class="text-muted">@p.Descripcion</small> }
+                        </td>
+                        <td><span class="badge badge-naranja">@p.TipoNombre</span></td>
+                        <td class="text-naranja"><strong>$@p.Precio.ToString("F2")</strong></td>
+                        <td>
+                            <span class="badge @(p.Disponible ? "badge-verde" : "badge-rojo")">
+                                @(p.Disponible ? "Disponible" : "No disponible")
+                            </span>
+                        </td>
+                        <td>
+                            <button onclick="editarPlato(@p.IdPlato,'@Html.Raw(p.Nombre.Replace("'","\'"))','@Html.Raw((p.Descripcion??string.Empty).Replace("'","\'"))',@p.Precio,@p.IdTipo)"
+                                    class="btn btn-sm btn-secondary">✏️</button>
+                            @if (p.Disponible)
+                            {
+                                <a href="/Admin/TogglePlato?id=@p.IdPlato&disponible=false" class="btn btn-sm btn-warning">⬇</a>
+                            }
+                            else
+                            {
+                                <a href="/Admin/TogglePlato?id=@p.IdPlato&disponible=true" class="btn btn-sm btn-success">⬆</a>
+                            }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL -->
+<div id="modal-plato" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 id="modal-titulo" class="text-naranja">Nuevo Plato</h3>
+            <button class="modal-close" onclick="closeModal('modal-plato')">×</button>
+        </div>
+        <form method="post" action="/Admin/Platos" enctype="multipart/form-data">
+            <input type="hidden" name="idPlato" id="idPlato" value="0" />
+            <div class="form-group">
+                <label class="form-label">Nombre *</label>
+                <input type="text" name="nombre" id="pNombre" class="form-control" required />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Descripción</label>
+                <textarea name="descripcion" id="pDescripcion" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Precio *</label>
+                    <input type="number" name="precio" id="pPrecio" class="form-control" step="0.01" min="0" required />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Categoría *</label>
+                    <select name="idTipo" id="pIdTipo" class="form-control" required>
+                        @foreach (var t in tipos)
+                        { <option value="@t.IdTipo">@t.Nombre</option> }
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Imagen (JPEG/PNG/WEBP, máx 2MB)</label>
+                <input type="file" name="imagen" class="form-control" accept="image/jpeg,image/png,image/webp" />
+            </div>
+            <button type="submit" class="btn btn-primary w-100" style="margin-top:8px">💾 Guardar</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function abrirNuevo() {
+    document.getElementById('idPlato').value = 0;
+    document.getElementById('pNombre').value = '';
+    document.getElementById('pDescripcion').value = '';
+    document.getElementById('pPrecio').value = '';
+    document.getElementById('modal-titulo').textContent = 'Nuevo Plato';
+    openModal('modal-plato');
+}
+function editarPlato(id, nombre, desc, precio, idTipo) {
+    document.getElementById('idPlato').value = id;
+    document.getElementById('pNombre').value = nombre;
+    document.getElementById('pDescripcion').value = desc;
+    document.getElementById('pPrecio').value = precio;
+    document.getElementById('pIdTipo').value = idTipo;
+    document.getElementById('modal-titulo').textContent = 'Editar Plato';
+    openModal('modal-plato');
+}
+</script>

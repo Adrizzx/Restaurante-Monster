@@ -1,0 +1,41 @@
+@using RestauranteMonster.Models
+@{
+    ViewData["Title"] = "Facturas";
+    var facturas = ViewBag.Facturas as List<Factura> ?? new List<Factura>();
+}
+
+<div class="topbar">
+    <h1>🧾 Facturas</h1>
+</div>
+
+<div style="padding:30px">
+    @if (TempData["Success"] != null) { <div class="alert alert-success">✅ @TempData["Success"]</div> }
+
+    <div class="card">
+        <div class="tabla-wrapper">
+            <table>
+                <thead>
+                    <tr><th>#</th><th>Fecha</th><th>Cliente</th><th>Mesero</th><th>Subtotal</th><th>IVA 12%</th><th>Total</th><th>Estado</th><th>Ver</th></tr>
+                </thead>
+                <tbody>
+                @foreach (var f in facturas)
+                {
+                    <tr>
+                        <td class="text-muted">@f.IdFactura</td>
+                        <td>@f.Fecha</td>
+                        <td>@(f.ClienteNombre ?? "Invitado")</td>
+                        <td>@(string.IsNullOrWhiteSpace(f.MeseroNombre) ? "—" : f.MeseroNombre)</td>
+                        <td>$@f.Subtotal.ToString("F2")</td>
+                        <td>$@f.Iva.ToString("F2")</td>
+                        <td class="text-naranja"><strong>$@f.Total.ToString("F2")</strong></td>
+                        <td><span class="badge badge-verde">@f.Estado</span></td>
+                        <td>
+                            <a href="/Admin/VerFactura?id=@f.IdFactura" class="btn btn-sm btn-outline">🔍 Ver</a>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

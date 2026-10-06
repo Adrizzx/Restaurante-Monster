@@ -1,0 +1,53 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurante Monster — Iniciar sesión</title>
+    <link rel="stylesheet" href="~/css/estilos.css" />
+</head>
+<body>
+<div class="login-wrapper">
+    <div class="login-box">
+        <div class="login-logo">
+            <div style="font-size:80px">🍔</div>
+            <h2>MONSTER</h2>
+            <p>Restaurante</p>
+        </div>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-error">⚠️ @ViewBag.Error</div>
+        }
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success">✅ @TempData["Success"]</div>
+        }
+
+        <form method="post" action="/Seguridad/Login">
+            <div class="form-group">
+                <label class="form-label">Correo electrónico</label>
+                <input type="email" name="correo" class="form-control"
+                       placeholder="usuario@monster.com" required autofocus />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Contraseña</label>
+                <input type="password" name="contrasena" class="form-control"
+                       placeholder="••••••••" required />
+            </div>
+            <button type="submit" class="btn btn-primary w-100 btn-lg" style="margin-top:8px">
+                Iniciar sesión
+            </button>
+        </form>
+
+        <p class="text-center text-muted" style="margin-top:24px;font-size:14px">
+            ¿No tienes cuenta?
+            <a href="/Seguridad/Registro" class="text-naranja" style="text-decoration:none">Regístrate</a>
+        </p>
+    </div>
+</div>
+</body>
+</html>

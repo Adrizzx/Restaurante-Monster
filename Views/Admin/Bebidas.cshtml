@@ -1,0 +1,102 @@
+@using RestauranteMonster.Models
+@{
+    ViewData["Title"] = "Bebidas";
+    var bebidas = ViewBag.Bebidas as List<Bebida> ?? new List<Bebida>();
+}
+
+<div class="topbar">
+    <h1>🥤 Bebidas</h1>
+    <div class="topbar-right">
+        <button onclick="abrirNuevo()" class="btn btn-primary">+ Nueva Bebida</button>
+    </div>
+</div>
+
+<div style="padding:30px">
+    @if (TempData["Success"] != null) { <div class="alert alert-success">✅ @TempData["Success"]</div> }
+    @if (TempData["Error"]   != null) { <div class="alert alert-error">⚠️ @TempData["Error"]</div> }
+
+    <div class="card">
+        <div class="tabla-wrapper">
+            <table>
+                <thead>
+                    <tr><th>Imagen</th><th>Nombre</th><th>Precio</th><th>Estado</th><th>Acciones</th></tr>
+                </thead>
+                <tbody>
+                @foreach (var b in bebidas)
+                {
+                    <tr>
+                        <td><img src="/@b.Imagen" class="img-tabla" onerror="this.style.display='none'" /></td>
+                        <td>
+                            <strong>@b.Nombre</strong>
+                            @if (!string.IsNullOrEmpty(b.Descripcion))
+                            { <br /><small class="text-muted">@b.Descripcion</small> }
+                        </td>
+                        <td class="text-naranja"><strong>$@b.Precio.ToString("F2")</strong></td>
+                        <td>
+                            <span class="badge @(b.Disponible ? "badge-verde" : "badge-rojo")">
+                                @(b.Disponible ? "Disponible" : "No disponible")
+                            </span>
+                        </td>
+                        <td>
+                            <button onclick="editarBebida(@b.IdBebida,'@Html.Raw(b.Nombre.Replace("'","\'"))','@Html.Raw((b.Descripcion??string.Empty).Replace("'","\'"))',@b.Precio)"
+                                    class="btn btn-sm btn-secondary">✏️</button>
+                            @if (b.Disponible)
+                            { <a href="/Admin/ToggleBebida?id=@b.IdBebida&disponible=false" class="btn btn-sm btn-warning">⬇</a> }
+                            else
+                            { <a href="/Admin/ToggleBebida?id=@b.IdBebida&disponible=true"  class="btn btn-sm btn-success">⬆</a> }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="modal-bebida" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 id="modal-titulo" class="text-naranja">Nueva Bebida</h3>
+            <button class="modal-close" onclick="closeModal('modal-bebida')">×</button>
+        </div>
+        <form method="post" action="/Admin/Bebidas" enctype="multipart/form-data">
+            <input type="hidden" name="idBebida" id="idBebida" value="0" />
+            <div class="form-group">
+                <label class="form-label">Nombre *</label>
+                <input type="text" name="nombre" id="bNombre" class="form-control" required />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Descripción</label>
+                <textarea name="descripcion" id="bDescripcion" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Precio *</label>
+                <input type="number" name="precio" id="bPrecio" class="form-control" step="0.01" min="0" required />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Imagen (JPEG/PNG/WEBP, máx 2MB)</label>
+                <input type="file" name="imagen" class="form-control" accept="image/jpeg,image/png,image/webp" />
+            </div>
+            <button type="submit" class="btn btn-primary w-100" style="margin-top:8px">💾 Guardar</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function abrirNuevo() {
+    document.getElementById('idBebida').value = 0;
+    document.getElementById('bNombre').value = '';
+    document.getElementById('bDescripcion').value = '';
+    document.getElementById('bPrecio').value = '';
+    document.getElementById('modal-titulo').textContent = 'Nueva Bebida';
+    openModal('modal-bebida');
+}
+function editarBebida(id, nombre, desc, precio) {
+    document.getElementById('idBebida').value = id;
+    document.getElementById('bNombre').value = nombre;
+    document.getElementById('bDescripcion').value = desc;
+    document.getElementById('bPrecio').value = precio;
+    document.getElementById('modal-titulo').textContent = 'Editar Bebida';
+    openModal('modal-bebida');
+}
+</script>

@@ -1,0 +1,116 @@
+@using RestauranteMonster.Models
+@{
+    ViewData["Title"] = "Inventario";
+    var stock = ViewBag.Stock as List<Stock> ?? new List<Stock>();
+}
+
+<div class="topbar">
+    <h1>📦 Inventario / Stock</h1>
+    <div class="topbar-right">
+        <button onclick="actualizarTodo()" class="btn btn-success">✅ Actualizar todo</button>
+    </div>
+</div>
+
+<div style="padding:30px">
+    @if (TempData["Success"] != null) { <div class="alert alert-success">✅ @TempData["Success"]</div> }
+    @if (TempData["Error"]   != null) { <div class="alert alert-error">⚠️ @TempData["Error"]</div> }
+
+    <!-- Formulario oculto para "Actualizar todo" -->
+    <form id="form-todo" method="post" action="/Admin/ActualizarTodoStock" style="display:none">
+        @foreach (var s in stock)
+        {
+            <input type="hidden" name="ids" value="@s.IdStock" />
+        }
+        <!-- Los campos cantidades/minimos se llenan por JS antes de enviar -->
+    </form>
+
+    <div class="card">
+        <div class="tabla-wrapper">
+            <table>
+                <thead>
+                    <tr><th>Ítem</th><th>Tipo</th><th>Precio</th><th>Cantidad</th><th>Mínimo</th><th>Estado</th><th>Guardar fila</th></tr>
+                </thead>
+                <tbody>
+                @foreach (var s in stock)
+                {
+                    <tr id="fila-@s.IdStock" class="@(s.StockBajo ? "row-stock-bajo" : "")">
+                        <td><strong>@s.NombreItem</strong></td>
+                        <td><span class="badge @(s.TipoItem=="PLATO"?"badge-naranja":"badge-azul")">@s.TipoItem</span></td>
+                        <td class="text-naranja">$@s.Precio.ToString("F2")</td>
+                        <td class="@(s.StockBajo ? "stock-bajo" : "")">
+                            <input id="cant-@s.IdStock" type="number" value="@s.Cantidad" min="0"
+                                   class="form-control" style="width:90px" />
+                        </td>
+                        <td>
+                            <input id="min-@s.IdStock" type="number" value="@s.StockMinimo" min="0"
+                                   class="form-control" style="width:90px" title="Stock mínimo" />
+                        </td>
+                        <td id="estado-@s.IdStock">
+                            @if (s.StockBajo)
+                            { <span class="badge badge-rojo">⚠️ Stock bajo</span> }
+                            else
+                            { <span class="badge badge-verde">OK</span> }
+                        </td>
+                        <td>
+                            <button type="button" onclick="guardarFila(@s.IdStock)"
+                                    id="btn-@s.IdStock" class="btn btn-sm btn-success">💾</button>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+function guardarFila(id) {
+    var btn = document.getElementById('btn-' + id);
+    btn.disabled = true;
+    btn.textContent = '...';
+
+    var cantidad   = document.getElementById('cant-' + id).value;
+    var minimo     = document.getElementById('min-'  + id).value;
+
+    fetch('/Admin/Stock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'idStock=' + id + '&cantidad=' + cantidad + '&stockMinimo=' + minimo
+    }).then(function() {
+        btn.textContent = '✔';
+        btn.style.background = '#2ecc71';
+        setTimeout(function() {
+            btn.disabled = false;
+            btn.textContent = '💾';
+            btn.style.background = '';
+        }, 1500);
+    }).catch(function() {
+        btn.disabled = false;
+        btn.textContent = '💾';
+        alert('Error al guardar fila ' + id);
+    });
+}
+
+function actualizarTodo() {
+    var form     = document.getElementById('form-todo');
+    var ids      = Array.from(document.querySelectorAll('[id^="cant-"]'))
+                       .map(function(el) { return el.id.replace('cant-',''); });
+
+    // Limpiar inputs previos de cantidades/minimos en el form oculto
+    form.querySelectorAll('[name="cantidades"],[name="minimos"]').forEach(function(el){ el.remove(); });
+
+    ids.forEach(function(id) {
+        var c = document.createElement('input');
+        c.type  = 'hidden'; c.name = 'cantidades';
+        c.value = document.getElementById('cant-' + id).value;
+        form.appendChild(c);
+
+        var m = document.createElement('input');
+        m.type  = 'hidden'; m.name = 'minimos';
+        m.value = document.getElementById('min-' + id).value;
+        form.appendChild(m);
+    });
+
+    form.submit();
+}
+</script>

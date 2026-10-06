@@ -1,0 +1,91 @@
+@model List<RestauranteMonster.Models.DetallePedido>
+@{
+    Layout = "_LayoutCliente";
+    ViewData["Title"] = "Mi Carrito";
+    double subtotal = Model.Sum(d => d.Subtotal);
+    double cargo    = subtotal * 0.10;
+    double iva      = subtotal * 0.12;
+    double total    = subtotal + cargo + iva;
+}
+
+<div style="padding:24px 30px">
+    <h2 style="margin-bottom:16px">🛒 Mi Carrito</h2>
+
+    @if (TempData["Error"] != null) { <div class="alert alert-error">⚠️ @TempData["Error"]</div> }
+
+    @if (!Model.Any())
+    {
+        <div class="card" style="text-align:center;padding:40px">
+            <p style="font-size:48px;margin:0">🛒</p>
+            <p>Tu carrito está vacío.</p>
+            <a href="/Cliente/Menu" class="btn btn-primary" style="margin-top:12px">Ver Menú</a>
+        </div>
+    }
+    else
+    {
+        <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start">
+            <div>
+                @for (int i = 0; i < Model.Count; i++)
+                {
+                    var d = Model[i];
+                    <div class="card" style="padding:12px 16px;margin-bottom:10px">
+                        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                            @if (!string.IsNullOrEmpty(d.Imagen))
+                            { <img src="/@d.Imagen" style="width:56px;height:56px;object-fit:cover;border-radius:8px" onerror="this.style.display='none'" /> }
+                            <div style="flex:1">
+                                <strong>@d.NombreItem</strong>
+                                <span class="badge @(d.TipoItem=="PLATO"?"badge-naranja":"badge-azul")" style="margin-left:6px">@d.TipoItem</span>
+                                <div class="text-muted text-sm">$@d.PrecioUnitario.ToString("F2") × @d.Cantidad = <strong class="text-naranja">$@d.Subtotal.ToString("F2")</strong></div>
+                            </div>
+                            <div class="qty-control">
+                                <button onclick="cambiarCantidad(@i, @(d.Cantidad-1))">−</button>
+                                <span>@d.Cantidad</span>
+                                <button onclick="cambiarCantidad(@i, @(d.Cantidad+1))">+</button>
+                            </div>
+                            <button onclick="eliminarItem(@i)" class="btn btn-sm btn-danger">🗑️</button>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="card" style="padding:20px;position:sticky;top:80px">
+                <h3 style="margin-bottom:16px">Resumen</h3>
+                <div class="carrito-totales">
+                    <div class="linea-total"><span>Subtotal</span><span>$@subtotal.ToString("F2")</span></div>
+                    <div class="linea-total"><span>Cargo servicio (10%)</span><span>$@cargo.ToString("F2")</span></div>
+                    <div class="linea-total"><span>IVA (12%)</span><span>$@iva.ToString("F2")</span></div>
+                    <div class="gran-total"><span>TOTAL</span><span>$@total.ToString("F2")</span></div>
+                </div>
+                <form method="post" action="/Cliente/Pedido" style="margin-top:16px">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-success w-100">✅ Confirmar Pedido</button>
+                </form>
+                <a href="/Cliente/Menu" class="btn btn-secondary w-100" style="margin-top:8px">← Seguir comprando</a>
+                <form method="post" action="/Carrito" style="margin-top:8px">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="accion" value="limpiar" />
+                    <input type="hidden" name="origen" value="cliente" />
+                    <button type="submit" class="btn btn-danger w-100">🗑️ Vaciar carrito</button>
+                </form>
+            </div>
+        </div>
+    }
+</div>
+
+<script>
+function cambiarCantidad(idx, cantidad) {
+    if (cantidad < 1) { eliminarItem(idx); return; }
+    fetch('/Carrito', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `accion=modificar&idx=${idx}&cantidad=${cantidad}&origen=cliente`
+    }).then(() => location.reload());
+}
+function eliminarItem(idx) {
+    fetch('/Carrito', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `accion=eliminar&idx=${idx}&origen=cliente`
+    }).then(() => location.reload());
+}
+</script>

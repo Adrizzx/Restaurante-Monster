@@ -1,0 +1,72 @@
+@using RestauranteMonster.Models
+@{
+    ViewData["Title"] = "Categorías";
+    var tipos = ViewBag.Tipos as List<TipoPlato> ?? new List<TipoPlato>();
+}
+
+<div class="topbar">
+    <h1>🏷️ Categorías de Platos</h1>
+    <div class="topbar-right">
+        <button onclick="abrirNuevo()" class="btn btn-primary">+ Nueva Categoría</button>
+    </div>
+</div>
+
+<div style="padding:30px">
+    @if (TempData["Success"] != null) { <div class="alert alert-success">✅ @TempData["Success"]</div> }
+    @if (TempData["Error"]   != null) { <div class="alert alert-error">⚠️ @TempData["Error"]</div> }
+
+    <div class="card" style="max-width:600px">
+        <div class="tabla-wrapper">
+            <table>
+                <thead><tr><th>#</th><th>Nombre</th><th>Acciones</th></tr></thead>
+                <tbody>
+                @foreach (var t in tipos)
+                {
+                    <tr>
+                        <td class="text-muted">@t.IdTipo</td>
+                        <td><strong>@t.Nombre</strong></td>
+                        <td>
+                            <button onclick="editarTipo(@t.IdTipo,'@Html.Raw(t.Nombre.Replace("'","\'"))')"
+                                    class="btn btn-sm btn-secondary">✏️ Editar</button>
+                            <a href="/Admin/EliminarCategoria?id=@t.IdTipo" class="btn btn-sm btn-danger"
+                               onclick="return confirm('¿Eliminar categoría @t.Nombre?')">🗑️</a>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="modal-cat" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 id="modal-titulo" class="text-naranja">Nueva Categoría</h3>
+            <button class="modal-close" onclick="closeModal('modal-cat')">×</button>
+        </div>
+        <form method="post" action="/Admin/Categorias">
+            <input type="hidden" name="idTipo" id="idTipo" value="0" />
+            <div class="form-group">
+                <label class="form-label">Nombre *</label>
+                <input type="text" name="nombre" id="cNombre" class="form-control" required />
+            </div>
+            <button type="submit" class="btn btn-primary w-100" style="margin-top:8px">💾 Guardar</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function abrirNuevo() {
+    document.getElementById('idTipo').value = 0;
+    document.getElementById('cNombre').value = '';
+    document.getElementById('modal-titulo').textContent = 'Nueva Categoría';
+    openModal('modal-cat');
+}
+function editarTipo(id, nombre) {
+    document.getElementById('idTipo').value = id;
+    document.getElementById('cNombre').value = nombre;
+    document.getElementById('modal-titulo').textContent = 'Editar Categoría';
+    openModal('modal-cat');
+}
+</script>

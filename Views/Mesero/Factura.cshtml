@@ -1,0 +1,59 @@
+@model RestauranteMonster.Models.Factura
+@{
+    ViewData["Title"] = "Factura #" + Model.IdFactura;
+}
+
+<div class="topbar">
+    <h1>🧾 Factura del Pedido</h1>
+    <div class="topbar-right">
+        <a href="/Mesero/Dashboard" class="btn btn-secondary btn-sm no-print">← Dashboard</a>
+        <a href="/Mesero/TomarPedido" class="btn btn-primary btn-sm no-print">+ Nuevo Pedido</a>
+        <button onclick="window.print()" class="btn btn-outline btn-sm no-print">🖨️ Imprimir</button>
+    </div>
+</div>
+
+<div style="padding:30px">
+    <div class="card factura-wrapper">
+        <div class="factura-header">
+            <div style="font-size:60px">🍔</div>
+            <h1>RESTAURANTE MONSTER</h1>
+            <p class="text-muted">Factura de venta</p>
+        </div>
+
+        <div class="factura-info">
+            <div><span>Factura N°:</span> <strong>#@Model.IdFactura</strong></div>
+            <div><span>Fecha:</span> <strong>@Model.Fecha</strong></div>
+            <div><span>Cliente:</span> <strong>@(Model.ClienteNombre ?? "Invitado")</strong></div>
+            @if (!string.IsNullOrWhiteSpace(Model.MeseroNombre))
+            { <div><span>Mesero:</span> <strong>@Model.MeseroNombre</strong></div> }
+            <div><span>Estado:</span> <span class="badge badge-verde">@Model.Estado</span></div>
+        </div>
+
+        <div class="factura-items" style="padding:16px 24px">
+            <table>
+                <thead><tr><th>Ítem</th><th>Cant.</th><th>P. Unit.</th><th>Subtotal</th></tr></thead>
+                <tbody>
+                @foreach (var d in Model.Detalles)
+                {
+                    <tr>
+                        <td>
+                            <span class="badge @(d.TipoItem=="PLATO"?"badge-naranja":"badge-azul")" style="margin-right:6px">@d.TipoItem</span>
+                            @d.NombreItem
+                        </td>
+                        <td>@d.Cantidad</td>
+                        <td>$@d.PrecioUnitario.ToString("F2")</td>
+                        <td>$@d.Subtotal.ToString("F2")</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="factura-totales">
+            <div class="linea-total"><span>Subtotal</span><span>$@Model.Subtotal.ToString("F2")</span></div>
+            <div class="linea-total"><span>Cargo servicio (10%)</span><span>$@Model.CargoServicio.ToString("F2")</span></div>
+            <div class="linea-total"><span>IVA (12%)</span><span>$@Model.Iva.ToString("F2")</span></div>
+            <div class="gran-total"><span>TOTAL</span><span>$@Model.Total.ToString("F2")</span></div>
+        </div>
+    </div>
+</div>

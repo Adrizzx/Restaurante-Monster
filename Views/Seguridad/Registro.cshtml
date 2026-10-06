@@ -1,0 +1,63 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurante Monster — Registro</title>
+    <link rel="stylesheet" href="~/css/estilos.css" />
+</head>
+<body>
+<div class="login-wrapper">
+    <div class="login-box" style="max-width:500px">
+        <div class="login-logo">
+            <div style="font-size:60px">🍔</div>
+            <h2>MONSTER</h2>
+            <p>Crear cuenta</p>
+        </div>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-error">⚠️ @ViewBag.Error</div>
+        }
+
+        <form method="post" action="/Seguridad/Registro">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Nombre</label>
+                    <input type="text" name="nombre" class="form-control" placeholder="Juan" required />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Apellido</label>
+                    <input type="text" name="apellido" class="form-control" placeholder="Pérez" required />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Correo electrónico</label>
+                <input type="email" name="correo" class="form-control"
+                       placeholder="correo@ejemplo.com" required />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Contraseña (mín. 6 caracteres)</label>
+                <input type="password" name="contrasena" class="form-control"
+                       placeholder="••••••••" required minlength="6" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Teléfono (opcional)</label>
+                <input type="tel" name="telefono" class="form-control" placeholder="0999999999" />
+            </div>
+            <button type="submit" class="btn btn-primary w-100 btn-lg" style="margin-top:8px">
+                Crear cuenta
+            </button>
+        </form>
+
+        <p class="text-center text-muted" style="margin-top:24px;font-size:14px">
+            ¿Ya tienes cuenta?
+            <a href="/Seguridad/Login" class="text-naranja" style="text-decoration:none">Inicia sesión</a>
+        </p>
+    </div>
+</div>
+</body>
+</html>

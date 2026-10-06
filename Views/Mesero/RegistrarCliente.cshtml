@@ -1,0 +1,69 @@
+@using RestauranteMonster.Models
+@{
+    ViewData["Title"] = "Registrar Cliente";
+    var clienteActual = ViewBag.ClienteActual as Cliente;
+}
+
+<div class="topbar">
+    <h1>👤 Registrar Cliente</h1>
+</div>
+
+<div style="padding:30px;max-width:600px">
+    @if (TempData["Success"] != null) { <div class="alert alert-success">✅ @TempData["Success"]</div> }
+    @if (TempData["Error"]   != null) { <div class="alert alert-error">⚠️ @TempData["Error"]</div> }
+
+    @if (clienteActual != null)
+    {
+        <div class="card mb-16">
+            <div class="card-header">
+                <h3 class="card-title">✅ Cliente seleccionado para este pedido</h3>
+            </div>
+            <div style="padding:16px">
+                <p><strong>@clienteActual.NombreCompleto</strong> — @clienteActual.Correo</p>
+                <a href="/Mesero/TomarPedido" class="btn btn-primary" style="margin-top:8px">🍽️ Ir a Tomar Pedido</a>
+            </div>
+        </div>
+    }
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Datos del cliente</h2>
+        </div>
+        <form method="post" action="/Mesero/RegistrarCliente" style="padding:20px">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Nombre *</label>
+                    <input type="text" name="nombre" class="form-control" required />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Apellido *</label>
+                    <input type="text" name="apellido" class="form-control" required />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Correo *</label>
+                <input type="email" name="correo" class="form-control" required />
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Teléfono</label>
+                    <input type="tel" name="telefono" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">F. Nacimiento</label>
+                    <input type="date" name="fechaNacimiento" class="form-control" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Dirección</label>
+                <input type="text" name="direccion" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Contraseña (mín. 6)</label>
+                <input type="password" name="contrasena" class="form-control" minlength="6" />
+                <small class="text-muted">Dejar vacío si el cliente ya existe (se usa su cuenta registrada).</small>
+            </div>
+            <button type="submit" class="btn btn-primary w-100" style="margin-top:8px">💾 Registrar y Seleccionar</button>
+        </form>
+    </div>
+</div>

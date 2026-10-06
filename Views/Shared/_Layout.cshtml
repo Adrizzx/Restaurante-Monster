@@ -1,0 +1,30 @@
+@using RestauranteMonster.Helpers
+@using RestauranteMonster.Models
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@(ViewData["Title"] != null ? ViewData["Title"] + " — " : "")Restaurante Monster</title>
+    <link rel="stylesheet" href="~/css/estilos.css" />
+</head>
+<body>
+<div class="layout">
+    @await Html.PartialAsync("_Sidebar")
+    <div class="main-content with-sidebar">
+        @RenderBody()
+    </div>
+</div>
+<script>
+function openModal(id)  { document.getElementById(id).classList.add('activo'); }
+function closeModal(id) { document.getElementById(id).classList.remove('activo'); }
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape')
+        document.querySelectorAll('.modal-overlay.activo').forEach(m => m.classList.remove('activo'));
+});
+document.querySelectorAll('.modal-overlay').forEach(m => {
+    m.addEventListener('click', function(e) { if (e.target === m) m.classList.remove('activo'); });
+});
+</script>
+</body>
+</html>

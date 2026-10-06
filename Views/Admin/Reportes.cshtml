@@ -1,0 +1,72 @@
+@using RestauranteMonster.Models
+@{
+    ViewData["Title"] = "Reportes";
+    var stats    = ViewBag.Estadisticas as Dictionary<string, double> ?? new Dictionary<string, double>();
+    var facturas = ViewBag.Facturas     as List<Factura>              ?? new List<Factura>();
+    int pedidos  = (int)(stats.ContainsKey("pedidos") ? stats["pedidos"] : 0);
+    double ventas = stats.ContainsKey("ventas") ? stats["ventas"] : 0;
+}
+
+<div class="topbar">
+    <h1>📈 Reportes</h1>
+</div>
+
+<div style="padding:30px">
+    <div class="stats-grid mb-24">
+        <div class="stat-card">
+            <div class="stat-icon">🛒</div>
+            <div class="stat-info">
+                <h3>@pedidos</h3>
+                <p>Pedidos hoy</p>
+            </div>
+        </div>
+        <div class="stat-card verde">
+            <div class="stat-icon">💰</div>
+            <div class="stat-info">
+                <h3>$@ventas.ToString("F2")</h3>
+                <p>Ventas hoy</p>
+            </div>
+        </div>
+        <div class="stat-card naranja">
+            <div class="stat-icon">🧾</div>
+            <div class="stat-info">
+                <h3>@facturas.Count</h3>
+                <p>Total facturas</p>
+            </div>
+        </div>
+        <div class="stat-card azul">
+            <div class="stat-icon">📊</div>
+            <div class="stat-info">
+                <h3>$@facturas.Sum(f=>f.Total).ToString("F2")</h3>
+                <p>Ventas totales</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Historial de Facturas</h2>
+        </div>
+        <div class="tabla-wrapper">
+            <table>
+                <thead>
+                    <tr><th>#</th><th>Fecha</th><th>Cliente</th><th>Subtotal</th><th>Cargo</th><th>IVA</th><th>Total</th></tr>
+                </thead>
+                <tbody>
+                @foreach (var f in facturas)
+                {
+                    <tr>
+                        <td class="text-muted">@f.IdFactura</td>
+                        <td>@f.Fecha</td>
+                        <td>@(f.ClienteNombre ?? "Invitado")</td>
+                        <td>$@f.Subtotal.ToString("F2")</td>
+                        <td>$@f.CargoServicio.ToString("F2")</td>
+                        <td>$@f.Iva.ToString("F2")</td>
+                        <td class="text-naranja"><strong>$@f.Total.ToString("F2")</strong></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

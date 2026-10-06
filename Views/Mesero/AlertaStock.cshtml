@@ -1,0 +1,38 @@
+@using RestauranteMonster.Models
+@{
+    ViewData["Title"] = "Alerta de Stock";
+    var stockBajo = ViewBag.StockBajo as List<Stock> ?? new List<Stock>();
+}
+
+<div class="topbar">
+    <h1>⚠️ Alerta de Stock Bajo</h1>
+</div>
+
+<div style="padding:30px">
+    @if (!stockBajo.Any())
+    {
+        <div class="alert alert-success">✅ No hay ítems con stock bajo en este momento.</div>
+    }
+    else
+    {
+        <div class="alert alert-warning">⚠️ Los siguientes ítems están por debajo del nivel mínimo de stock.</div>
+        <div class="card">
+            <div class="tabla-wrapper">
+                <table>
+                    <thead><tr><th>Ítem</th><th>Tipo</th><th>Cantidad</th><th>Mínimo</th></tr></thead>
+                    <tbody>
+                    @foreach (var s in stockBajo)
+                    {
+                        <tr class="row-stock-bajo">
+                            <td><strong>@s.NombreItem</strong></td>
+                            <td><span class="badge @(s.TipoItem=="PLATO"?"badge-naranja":"badge-azul")">@s.TipoItem</span></td>
+                            <td class="stock-bajo">@s.Cantidad</td>
+                            <td>@s.StockMinimo</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

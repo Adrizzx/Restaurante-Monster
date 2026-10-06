@@ -1,0 +1,153 @@
+@using RestauranteMonster.Models
+@{
+    ViewData["Title"] = "Tomar Pedido";
+    var platos  = ViewBag.Platos  as List<Plato>  ?? new List<Plato>();
+    var bebidas = ViewBag.Bebidas as List<Bebida> ?? new List<Bebida>();
+    var tipos   = ViewBag.Tipos   as List<TipoPlato> ?? new List<TipoPlato>();
+    var carrito = ViewBag.Carrito as List<DetallePedido> ?? new List<DetallePedido>();
+    double total = carrito.Sum(d => d.Subtotal);
+    var clienteActual = ViewBag.ClienteActual as Cliente;
+}
+
+<div class="topbar">
+    <h1>🍽️ Tomar Pedido</h1>
+    <div class="topbar-right">
+        @if (clienteActual != null)
+        { <span class="badge badge-verde">👤 @clienteActual.NombreCompleto</span> }
+        else
+        { <a href="/Mesero/RegistrarCliente" class="btn btn-sm btn-secondary">+ Asignar cliente</a> }
+    </div>
+</div>
+
+@if (TempData["Error"] != null) { <div class="alert alert-error" style="margin:16px 30px">⚠️ @TempData["Error"]</div> }
+
+<div class="kiosco-layout">
+
+    <!-- MENÚ izquierda -->
+    <div class="menu-panel">
+        <!-- Tabs categorías -->
+        <div class="menu-tabs">
+            <button class="menu-tab activo" onclick="filtrar('todos')">Todos</button>
+            @foreach (var t in tipos)
+            { <button class="menu-tab" onclick="filtrar('@t.IdTipo')">@t.Nombre</button> }
+            <button class="menu-tab" onclick="filtrar('bebida')">Bebidas</button>
+        </div>
+
+        <!-- Platos -->
+        <div class="menu-grid" id="menu-grid">
+            @foreach (var p in platos)
+            {
+                <div class="plato-card" data-tipo="@p.IdTipo">
+                    @if (!string.IsNullOrEmpty(p.Imagen))
+                    { <img src="/@p.Imagen" onerror="this.style.display='none'" /> }
+                    <div class="plato-info">
+                        <h4>@p.Nombre</h4>
+                        <p class="text-muted text-sm">@p.Descripcion</p>
+                        <span class="text-naranja"><strong>$@p.Precio.ToString("F2")</strong></span>
+                        @if (p.Stock <= 0)
+                        { <span class="badge badge-rojo" style="display:block;margin-top:4px">Sin stock</span> }
+                    </div>
+                    @if (p.Stock > 0)
+                    {
+                        <button onclick="agregarItem('PLATO', @p.IdPlato)" class="btn btn-sm btn-primary w-100">+ Agregar</button>
+                    }
+                </div>
+            }
+
+            @foreach (var b in bebidas)
+            {
+                <div class="plato-card" data-tipo="bebida">
+                    @if (!string.IsNullOrEmpty(b.Imagen))
+                    { <img src="/@b.Imagen" onerror="this.style.display='none'" /> }
+                    <div class="plato-info">
+                        <h4>@b.Nombre</h4>
+                        <p class="text-muted text-sm">@b.Descripcion</p>
+                        <span class="text-naranja"><strong>$@b.Precio.ToString("F2")</strong></span>
+                    </div>
+                    <button onclick="agregarItem('BEBIDA', @b.IdBebida)" class="btn btn-sm btn-primary w-100">+ Agregar</button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- CARRITO derecha -->
+    <div class="carrito-panel">
+        <h3 style="margin-bottom:12px">🛒 Pedido en curso</h3>
+
+        @if (!carrito.Any())
+        {
+            <p class="text-muted text-center" style="padding:20px 0">Sin ítems aún</p>
+        }
+        else
+        {
+            <div class="carrito-items">
+            @for (int i = 0; i < carrito.Count; i++)
+            {
+                var d = carrito[i];
+                <div class="carrito-item">
+                    <div>
+                        <strong>@d.NombreItem</strong>
+                        <span class="badge @(d.TipoItem=="PLATO"?"badge-naranja":"badge-azul")" style="margin-left:4px">@d.TipoItem</span>
+                    </div>
+                    <div class="qty-control">
+                        <button onclick="cambiarCantidad(@i, @(d.Cantidad - 1))">−</button>
+                        <span>@d.Cantidad</span>
+                        <button onclick="cambiarCantidad(@i, @(d.Cantidad + 1))">+</button>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px">
+                        <span class="text-naranja">$@d.Subtotal.ToString("F2")</span>
+                        <button onclick="eliminarItem(@i)" class="btn btn-sm btn-danger">×</button>
+                    </div>
+                </div>
+            }
+            </div>
+
+            <div class="carrito-totales">
+                <div class="linea-total"><span>Total estimado:</span><span class="text-naranja"><strong>$@total.ToString("F2")</strong></span></div>
+            </div>
+
+            <form method="post" action="/Mesero/TomarPedido" style="margin-top:12px">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-success w-100">✅ Confirmar Pedido</button>
+            </form>
+            <form method="post" action="/Carrito" style="margin-top:8px">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="accion" value="limpiar" />
+                <input type="hidden" name="origen" value="mesero" />
+                <button type="submit" class="btn btn-danger w-100">🗑️ Limpiar</button>
+            </form>
+        }
+    </div>
+</div>
+
+<script>
+function agregarItem(tipo, id) {
+    fetch('/Carrito', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': document.querySelector('[name=__RequestVerificationToken]')?.value ?? '' },
+        body: `accion=agregar&tipo=${tipo}&id=${id}&cantidad=1&origen=mesero`
+    }).then(() => location.reload());
+}
+function cambiarCantidad(idx, cantidad) {
+    if (cantidad < 1) { eliminarItem(idx); return; }
+    fetch('/Carrito', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `accion=modificar&idx=${idx}&cantidad=${cantidad}&origen=mesero`
+    }).then(() => location.reload());
+}
+function eliminarItem(idx) {
+    fetch('/Carrito', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `accion=eliminar&idx=${idx}&origen=mesero`
+    }).then(() => location.reload());
+}
+function filtrar(tipo) {
+    document.querySelectorAll('.menu-tab').forEach(t => t.classList.remove('activo'));
+    event.target.classList.add('activo');
+    document.querySelectorAll('.plato-card').forEach(c => {
+        c.style.display = (tipo === 'todos' || c.dataset.tipo == tipo) ? '' : 'none';
+    });
+}
+</script>

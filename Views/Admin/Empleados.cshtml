@@ -1,0 +1,109 @@
+@using RestauranteMonster.Models
+@{
+    ViewData["Title"] = "Empleados";
+    var empleados = ViewBag.Empleados as List<Empleado> ?? new List<Empleado>();
+}
+
+<div class="topbar">
+    <h1>👷 Empleados (Meseros)</h1>
+    <div class="topbar-right">
+        <button onclick="abrirNuevo()" class="btn btn-primary">+ Nuevo Empleado</button>
+    </div>
+</div>
+
+<div style="padding:30px">
+    @if (TempData["Success"] != null) { <div class="alert alert-success">✅ @TempData["Success"]</div> }
+    @if (TempData["Error"]   != null) { <div class="alert alert-error">⚠️ @TempData["Error"]</div> }
+
+    <div class="card">
+        <div class="tabla-wrapper">
+            <table>
+                <thead><tr><th>Nombre</th><th>Correo</th><th>Teléfono</th><th>Estado</th><th>Acciones</th></tr></thead>
+                <tbody>
+                @foreach (var e in empleados)
+                {
+                    <tr>
+                        <td><strong>@e.NombreCompleto</strong></td>
+                        <td>@e.Correo</td>
+                        <td>@(e.Telefono ?? "—")</td>
+                        <td>
+                            <span class="badge @(e.Estado==1 ? "badge-verde" : "badge-rojo")">
+                                @(e.Estado == 1 ? "Activo" : "Inactivo")
+                            </span>
+                        </td>
+                        <td>
+                            <button onclick="editarEmpleado(@e.IdUsuario,'@Html.Raw(e.Nombre.Replace("'","\'"))','@Html.Raw(e.Apellido.Replace("'","\'"))','@e.Correo','@(e.Telefono??"")')"
+                                    class="btn btn-sm btn-secondary">✏️</button>
+                            @if (e.Estado == 1)
+                            { <a href="/Admin/ToggleEmpleado?id=@e.IdUsuario&estado=0" class="btn btn-sm btn-warning">Desactivar</a> }
+                            else
+                            { <a href="/Admin/ToggleEmpleado?id=@e.IdUsuario&estado=1" class="btn btn-sm btn-success">Activar</a> }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="modal-emp" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 id="modal-titulo" class="text-naranja">Nuevo Empleado</h3>
+            <button class="modal-close" onclick="closeModal('modal-emp')">×</button>
+        </div>
+        <form method="post" action="/Admin/Empleados">
+            <input type="hidden" name="idUsuario" id="idUsuario" value="0" />
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Nombre *</label>
+                    <input type="text" name="nombre" id="eNombre" class="form-control" required />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Apellido *</label>
+                    <input type="text" name="apellido" id="eApellido" class="form-control" required />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Correo *</label>
+                <input type="email" name="correo" id="eCorreo" class="form-control" required />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Teléfono</label>
+                <input type="tel" name="telefono" id="eTelefono" class="form-control" />
+            </div>
+            <div class="form-group" id="pass-group">
+                <label class="form-label">Contraseña (mín. 6 caracteres)</label>
+                <input type="password" name="contrasena" id="eContrasena" class="form-control" minlength="6" />
+                <small class="text-muted">Dejar vacío al editar para no cambiar.</small>
+            </div>
+            <button type="submit" class="btn btn-primary w-100" style="margin-top:8px">💾 Guardar</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function abrirNuevo() {
+    document.getElementById('idUsuario').value = 0;
+    document.getElementById('eNombre').value = '';
+    document.getElementById('eApellido').value = '';
+    document.getElementById('eCorreo').value = '';
+    document.getElementById('eTelefono').value = '';
+    document.getElementById('eContrasena').value = '';
+    document.getElementById('eContrasena').required = true;
+    document.getElementById('modal-titulo').textContent = 'Nuevo Empleado';
+    openModal('modal-emp');
+}
+function editarEmpleado(id, nombre, apellido, correo, tel) {
+    document.getElementById('idUsuario').value = id;
+    document.getElementById('eNombre').value = nombre;
+    document.getElementById('eApellido').value = apellido;
+    document.getElementById('eCorreo').value = correo;
+    document.getElementById('eTelefono').value = tel;
+    document.getElementById('eContrasena').value = '';
+    document.getElementById('eContrasena').required = false;
+    document.getElementById('modal-titulo').textContent = 'Editar Empleado';
+    openModal('modal-emp');
+}
+</script>

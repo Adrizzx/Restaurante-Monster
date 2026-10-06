@@ -1,0 +1,474 @@
+@using RestauranteMonster.Models
+@{
+    Layout = "_LayoutCliente";
+    ViewData["Title"] = "Menú";
+    var platos  = ViewBag.Platos  as List<Plato>         ?? new List<Plato>();
+    var bebidas = ViewBag.Bebidas as List<Bebida>         ?? new List<Bebida>();
+    var tipos   = ViewBag.Tipos   as List<TipoPlato>      ?? new List<TipoPlato>();
+    var carrito = ViewBag.Carrito as List<DetallePedido>  ?? new List<DetallePedido>();
+    int totalItems = carrito.Sum(d => d.Cantidad);
+    double totalPrice = carrito.Sum(d => d.Subtotal);
+}
+
+<style>
+/* ── Contenedor principal ── */
+.menu-page { padding: 24px 30px 100px; }
+
+/* ── Cabecera con búsqueda ── */
+.menu-toprow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+.menu-toprow h2 { font-size: 22px; font-weight: 700; }
+.menu-toprow small { color: var(--texto-muted); font-size: 13px; }
+
+.search-box {
+    position: relative;
+    flex: 1;
+    max-width: 380px;
+    min-width: 200px;
+}
+.search-box input {
+    width: 100%;
+    background: var(--bg-card);
+    border: 1px solid var(--borde);
+    border-radius: 30px;
+    color: var(--texto);
+    padding: 11px 18px 11px 44px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.search-box input:focus {
+    border-color: var(--rojo);
+    box-shadow: 0 0 0 3px rgba(230,57,70,0.12);
+}
+.search-box input::placeholder { color: #555; }
+.search-box .s-icon {
+    position: absolute; left: 16px; top: 50%;
+    transform: translateY(-50%); font-size: 16px; pointer-events: none;
+}
+
+/* ── Tabs con conteo ── */
+.menu-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+.menu-tab {
+    padding: 9px 18px; border-radius: 30px;
+    background: var(--bg-card); border: 2px solid var(--borde);
+    color: var(--texto-muted); cursor: pointer; font-size: 13px; font-weight: 600;
+    display: flex; align-items: center; gap: 6px;
+    transition: all 0.2s;
+}
+.menu-tab:hover { border-color: var(--rojo); color: var(--texto); }
+.menu-tab.activo { background: var(--rojo); border-color: var(--rojo); color: #fff; }
+.tab-n {
+    background: rgba(255,255,255,0.18); color: inherit;
+    border-radius: 10px; padding: 1px 7px; font-size: 11px;
+}
+
+/* ── Grid de tarjetas ── */
+.items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 16px;
+}
+
+/* ── Tarjeta de ítem ── */
+.item-card {
+    background: var(--bg-card);
+    border: 2px solid var(--borde);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    position: relative;
+}
+.item-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+.item-card.en-carrito { border-color: var(--exito); }
+.item-card.agotado { opacity: .55; }
+
+.item-thumb {
+    width: 100%; height: 120px;
+    object-fit: cover; display: block;
+}
+.item-thumb-placeholder {
+    height: 80px; display: flex; align-items: center; justify-content: center;
+    font-size: 36px; background: rgba(255,255,255,0.03);
+    border-bottom: 1px solid var(--borde);
+}
+
+.item-body { padding: 12px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
+
+.item-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; }
+.item-name { font-size: 14px; font-weight: 700; line-height: 1.3; color: var(--texto); }
+.item-price { font-size: 17px; font-weight: 800; color: var(--naranja); white-space: nowrap; flex-shrink: 0; }
+
+.item-cat {
+    display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .5px; padding: 2px 8px; border-radius: 10px;
+    background: rgba(244,162,97,.12); color: var(--naranja);
+    border: 1px solid rgba(244,162,97,.25); width: fit-content;
+}
+.item-cat.bebida { background: rgba(52,152,219,.12); color: #3498db; border-color: rgba(52,152,219,.25); }
+
+.item-desc {
+    font-size: 12px; color: var(--texto-muted); line-height: 1.4;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden; margin: 0;
+}
+
+/* ── Acción inferior ── */
+.item-action { margin-top: auto; padding-top: 10px; }
+
+.agregar-btn {
+    width: 100%; padding: 10px; border: none; border-radius: 8px;
+    background: var(--rojo); color: #fff; font-size: 13px; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px;
+    transition: background .2s, transform .1s;
+}
+.agregar-btn:hover { background: #c0303b; }
+.agregar-btn:active { transform: scale(.97); }
+
+.agotado-msg {
+    text-align: center; padding: 9px; border-radius: 8px; font-size: 12px; font-weight: 600;
+    background: rgba(231,76,60,.08); border: 1px solid rgba(231,76,60,.2); color: #e74c3c;
+}
+
+/* ── Control de cantidad ── */
+.qty-ctrl {
+    display: flex; align-items: center; border-radius: 8px;
+    overflow: hidden; border: 2px solid var(--exito);
+}
+.qty-btn {
+    background: var(--exito); color: #fff; border: none;
+    width: 36px; height: 36px; font-size: 20px; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background .15s; flex-shrink: 0;
+}
+.qty-btn:hover { background: #27ae60; }
+.qty-num {
+    flex: 1; text-align: center; font-size: 15px; font-weight: 800;
+    background: rgba(46,204,113,.1); color: var(--texto);
+    height: 36px; display: flex; align-items: center; justify-content: center;
+    padding: 0 4px;
+}
+.qty-sub {
+    font-size: 12px; font-weight: 700; color: var(--exito);
+    white-space: nowrap; padding: 0 10px 0 6px;
+    height: 36px; display: flex; align-items: center;
+    background: rgba(46,204,113,.08);
+}
+
+/* ── Barra flotante del carrito ── */
+.cart-bar {
+    position: fixed; bottom: -90px; left: 50%; transform: translateX(-50%);
+    min-width: 340px; max-width: 92vw;
+    background: #141428; border: 1.5px solid var(--exito); border-radius: 50px;
+    padding: 12px 14px 12px 20px;
+    display: flex; align-items: center; gap: 16px;
+    box-shadow: 0 8px 40px rgba(0,0,0,.7);
+    z-index: 600; transition: bottom .35s cubic-bezier(.34,1.56,.64,1);
+}
+.cart-bar.show { bottom: 22px; }
+.bar-icon { font-size: 24px; }
+.bar-info { flex: 1; }
+.bar-items-txt { font-size: 12px; color: var(--texto-muted); }
+.bar-total-txt { font-size: 19px; font-weight: 800; color: var(--exito); line-height: 1.1; }
+.bar-btn {
+    background: var(--exito); color: #fff; padding: 10px 20px;
+    border-radius: 30px; font-size: 13px; font-weight: 700;
+    text-decoration: none; white-space: nowrap;
+    transition: background .2s;
+}
+.bar-btn:hover { background: #27ae60; }
+
+/* ── Sin resultados ── */
+.no-results {
+    display: none; grid-column: 1 / -1; text-align: center;
+    padding: 60px 20px; color: var(--texto-muted);
+}
+.no-results .nr-icon { font-size: 52px; margin-bottom: 12px; }
+.no-results p { font-size: 15px; }
+
+@@media (max-width: 600px) {
+    .menu-page { padding: 16px 16px 100px; }
+    .menu-toprow { flex-direction: column; align-items: stretch; }
+    .search-box { max-width: none; }
+    .items-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+}
+</style>
+
+@if (TempData["Error"] != null)
+{ <div class="alert alert-error" style="margin:16px 30px 0">⚠️ @TempData["Error"]</div> }
+
+<div class="menu-page">
+
+    <!-- Cabecera + buscador -->
+    <div class="menu-toprow">
+        <div>
+            <h2>🍽️ Nuestro Menú</h2>
+            <small>@(platos.Count + bebidas.Count) ítems disponibles</small>
+        </div>
+        <div class="search-box">
+            <span class="s-icon">🔍</span>
+            <input type="text" id="search-input" placeholder="Buscar plato o bebida..." oninput="aplicarFiltros()" />
+        </div>
+    </div>
+
+    <!-- Tabs de categoría con conteo -->
+    <div class="menu-tabs">
+        <button class="menu-tab activo" data-cat="todos" onclick="seleccionarCat('todos',this)">
+            Todos <span class="tab-n">@(platos.Count + bebidas.Count)</span>
+        </button>
+        @foreach (var t in tipos)
+        {
+            int cnt = platos.Count(p => p.IdTipo == t.IdTipo);
+            if (cnt > 0)
+            {
+                <button class="menu-tab" data-cat="@t.IdTipo" onclick="seleccionarCat('@t.IdTipo',this)">
+                    @t.Nombre <span class="tab-n">@cnt</span>
+                </button>
+            }
+        }
+        @if (bebidas.Any())
+        {
+            <button class="menu-tab" data-cat="bebida" onclick="seleccionarCat('bebida',this)">
+                🥤 Bebidas <span class="tab-n">@bebidas.Count</span>
+            </button>
+        }
+    </div>
+
+    <!-- Grid de ítems -->
+    <div class="items-grid" id="menu-grid">
+
+        @foreach (var p in platos)
+        {
+            var inCart = carrito.FirstOrDefault(d => d.IdPlato == p.IdPlato && d.TipoItem == "PLATO");
+            int qty = inCart?.Cantidad ?? 0;
+            bool agotado = p.Stock <= 0;
+            <div class="item-card @(qty > 0 ? "en-carrito" : "") @(agotado ? "agotado" : "")"
+                 id="card-PLATO-@p.IdPlato"
+                 data-cat="@p.IdTipo"
+                 data-itemtipo="PLATO"
+                 data-id="@p.IdPlato"
+                 data-nombre="@p.Nombre.ToLower()"
+                 data-price="@p.Precio.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)">
+
+                @if (!string.IsNullOrEmpty(p.Imagen))
+                { <img src="/@p.Imagen" class="item-thumb" alt="@p.Nombre" onerror="this.style.display='none'" /> }
+                else
+                { <div class="item-thumb-placeholder">🍽️</div> }
+
+                <div class="item-body">
+                    <div class="item-top">
+                        <h4 class="item-name">@p.Nombre</h4>
+                        <span class="item-price">$@p.Precio.ToString("F2")</span>
+                    </div>
+                    @if (!string.IsNullOrEmpty(p.TipoNombre))
+                    { <span class="item-cat">@p.TipoNombre</span> }
+                    @if (!string.IsNullOrEmpty(p.Descripcion))
+                    { <p class="item-desc">@p.Descripcion</p> }
+
+                    <div class="item-action" id="action-PLATO-@p.IdPlato">
+                        @if (agotado)
+                        { <div class="agotado-msg">😔 Agotado por hoy</div> }
+                        else if (qty > 0)
+                        {
+                            <div class="qty-ctrl">
+                                <button class="qty-btn" onclick="ajustar('PLATO',@p.IdPlato,@(qty-1))">−</button>
+                                <span class="qty-num">@qty</span>
+                                <button class="qty-btn" onclick="ajustar('PLATO',@p.IdPlato,@(qty+1))">+</button>
+                                <span class="qty-sub">$@((p.Precio * qty).ToString("F2"))</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <button class="agregar-btn" onclick="ajustar('PLATO',@p.IdPlato,1)">
+                                🛒 Agregar
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        @foreach (var b in bebidas)
+        {
+            var inCart = carrito.FirstOrDefault(d => d.IdBebida == b.IdBebida && d.TipoItem == "BEBIDA");
+            int qty = inCart?.Cantidad ?? 0;
+            <div class="item-card @(qty > 0 ? "en-carrito" : "")"
+                 id="card-BEBIDA-@b.IdBebida"
+                 data-cat="bebida"
+                 data-itemtipo="BEBIDA"
+                 data-id="@b.IdBebida"
+                 data-nombre="@b.Nombre.ToLower()"
+                 data-price="@b.Precio.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)">
+
+                @if (!string.IsNullOrEmpty(b.Imagen))
+                { <img src="/@b.Imagen" class="item-thumb" alt="@b.Nombre" onerror="this.style.display='none'" /> }
+                else
+                { <div class="item-thumb-placeholder">🥤</div> }
+
+                <div class="item-body">
+                    <div class="item-top">
+                        <h4 class="item-name">@b.Nombre</h4>
+                        <span class="item-price">$@b.Precio.ToString("F2")</span>
+                    </div>
+                    <span class="item-cat bebida">Bebida</span>
+                    @if (!string.IsNullOrEmpty(b.Descripcion))
+                    { <p class="item-desc">@b.Descripcion</p> }
+
+                    <div class="item-action" id="action-BEBIDA-@b.IdBebida">
+                        @if (qty > 0)
+                        {
+                            <div class="qty-ctrl">
+                                <button class="qty-btn" onclick="ajustar('BEBIDA',@b.IdBebida,@(qty-1))">−</button>
+                                <span class="qty-num">@qty</span>
+                                <button class="qty-btn" onclick="ajustar('BEBIDA',@b.IdBebida,@(qty+1))">+</button>
+                                <span class="qty-sub">$@((b.Precio * qty).ToString("F2"))</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <button class="agregar-btn" onclick="ajustar('BEBIDA',@b.IdBebida,1)">
+                                🛒 Agregar
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div class="no-results" id="no-results">
+            <div class="nr-icon">🔍</div>
+            <p>Sin resultados para tu búsqueda.<br><small style="color:#666">Prueba con otro nombre o categoría.</small></p>
+        </div>
+    </div>
+</div>
+
+<!-- Barra flotante del carrito -->
+<div class="cart-bar @(totalItems > 0 ? "show" : "")" id="cart-bar">
+    <span class="bar-icon">🛒</span>
+    <div class="bar-info">
+        <div class="bar-items-txt"><span id="bar-count">@totalItems</span> ítem(s) en tu pedido</div>
+        <div class="bar-total-txt" id="bar-total">$@totalPrice.ToString("F2")</div>
+    </div>
+    <a href="/Cliente/Carrito" class="bar-btn">Ver pedido →</a>
+</div>
+
+<script>
+// ── Estado del carrito (cliente) ──────────────────────────────────────────
+const cartState  = {};  // "TIPO-ID" → qty
+const itemPrices = {};  // "TIPO-ID" → precio unitario
+
+// Inicializar precios desde los data-attributes de cada tarjeta
+document.querySelectorAll('.item-card[data-id]').forEach(card => {
+    const key = `${card.dataset.itemtipo}-${card.dataset.id}`;
+    itemPrices[key] = parseFloat(card.dataset.price);
+});
+
+// Inicializar cantidades desde el carrito del servidor
+@foreach (var d in carrito)
+{
+    var tipo = d.TipoItem;
+    var id   = d.TipoItem == "PLATO" ? d.IdPlato : d.IdBebida;
+    <text>cartState['@(tipo)-@(id)'] = @d.Cantidad;</text>
+}
+
+// ── Ajustar cantidad (sin recarga de página) ──────────────────────────────
+async function ajustar(tipo, id, nuevaCantidad) {
+    const key = `${tipo}-${id}`;
+
+    // 1. Actualización optimista del estado
+    if (nuevaCantidad <= 0) delete cartState[key];
+    else                    cartState[key] = nuevaCantidad;
+
+    // 2. Re-renderizar tarjeta y barra
+    renderAccion(tipo, id);
+    actualizarBarra();
+
+    // 3. Sincronizar con el servidor
+    try {
+        await fetch('/Carrito/Ajustar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `tipo=${tipo}&id=${id}&cantidad=${nuevaCantidad}`
+        });
+    } catch(e) { console.error('Error al sincronizar carrito', e); }
+}
+
+// ── Renderizar la sección de acción de una tarjeta ────────────────────────
+function renderAccion(tipo, id) {
+    const key    = `${tipo}-${id}`;
+    const qty    = cartState[key] || 0;
+    const price  = itemPrices[key] || 0;
+    const card   = document.getElementById(`card-${tipo}-${id}`);
+    const action = document.getElementById(`action-${tipo}-${id}`);
+    if (!card || !action) return;
+
+    card.classList.toggle('en-carrito', qty > 0);
+
+    if (card.classList.contains('agotado')) return;
+
+    if (qty > 0) {
+        action.innerHTML = `
+            <div class="qty-ctrl">
+                <button class="qty-btn" onclick="ajustar('${tipo}',${id},${qty-1})">−</button>
+                <span class="qty-num">${qty}</span>
+                <button class="qty-btn" onclick="ajustar('${tipo}',${id},${qty+1})">+</button>
+                <span class="qty-sub">$${(price * qty).toFixed(2)}</span>
+            </div>`;
+    } else {
+        action.innerHTML = `
+            <button class="agregar-btn" onclick="ajustar('${tipo}',${id},1)">
+                🛒 Agregar
+            </button>`;
+    }
+}
+
+// ── Actualizar barra flotante y contador del header ───────────────────────
+function actualizarBarra() {
+    let totalItems = 0, totalPrecio = 0;
+    Object.entries(cartState).forEach(([key, qty]) => {
+        totalItems  += qty;
+        totalPrecio += qty * (itemPrices[key] || 0);
+    });
+
+    document.getElementById('bar-count').textContent = totalItems;
+    document.getElementById('bar-total').textContent  = '$' + totalPrecio.toFixed(2);
+    document.getElementById('cart-bar').classList.toggle('show', totalItems > 0);
+
+    const hdr = document.getElementById('header-cart-count');
+    if (hdr) hdr.textContent = totalItems;
+}
+
+// ── Filtrar por categoría ─────────────────────────────────────────────────
+let currentCat = 'todos';
+
+function seleccionarCat(cat, btn) {
+    currentCat = cat;
+    document.querySelectorAll('.menu-tab').forEach(t => t.classList.remove('activo'));
+    btn.classList.add('activo');
+    aplicarFiltros();
+}
+
+// ── Filtrar por búsqueda + categoría ─────────────────────────────────────
+function aplicarFiltros() {
+    const q = document.getElementById('search-input').value.toLowerCase().trim();
+    const cards = document.querySelectorAll('.item-card');
+    let visible = 0;
+
+    cards.forEach(card => {
+        const matchCat    = currentCat === 'todos' || card.dataset.cat === currentCat;
+        const matchSearch = !q || card.dataset.nombre.includes(q);
+        const show        = matchCat && matchSearch;
+        card.style.display = show ? '' : 'none';
+        if (show) visible++;
+    });
+
+    document.getElementById('no-results').style.display = visible === 0 ? '' : 'none';
+}
+</script>

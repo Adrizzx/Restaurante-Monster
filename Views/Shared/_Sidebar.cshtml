@@ -1,0 +1,72 @@
+@using RestauranteMonster.Helpers
+@using RestauranteMonster.Models
+@{
+    var usuario = Context.Session.GetObject<Usuario>("usuario");
+    var ruta    = ViewContext.HttpContext.Request.Path.Value ?? "";
+}
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <h3>🍔 MONSTER</h3>
+        <p>@usuario?.NombreCompleto</p>
+        <p style="font-size:11px;margin-top:2px">@usuario?.RolNombre</p>
+    </div>
+
+    <nav class="sidebar-nav">
+        @if (usuario?.RolNombre == "ADMIN")
+        {
+            <p class="nav-section">PRINCIPAL</p>
+            <a href="/Admin/Dashboard" class="nav-link @(ruta.Contains("/Admin/Dashboard") ? "activo" : "")">
+                <span class="icon">📊</span> Dashboard
+            </a>
+            <p class="nav-section">MENÚ</p>
+            <a href="/Admin/Platos" class="nav-link @(ruta.Contains("/Admin/Platos") ? "activo" : "")">
+                <span class="icon">🍽️</span> Platos
+            </a>
+            <a href="/Admin/Bebidas" class="nav-link @(ruta.Contains("/Admin/Bebidas") ? "activo" : "")">
+                <span class="icon">🥤</span> Bebidas
+            </a>
+            <a href="/Admin/Categorias" class="nav-link @(ruta.Contains("/Admin/Categorias") ? "activo" : "")">
+                <span class="icon">🏷️</span> Categorías
+            </a>
+            <p class="nav-section">USUARIOS</p>
+            <a href="/Admin/Clientes" class="nav-link @(ruta.Contains("/Admin/Clientes") ? "activo" : "")">
+                <span class="icon">👥</span> Clientes
+            </a>
+            <a href="/Admin/Empleados" class="nav-link @(ruta.Contains("/Admin/Empleados") ? "activo" : "")">
+                <span class="icon">👷</span> Empleados
+            </a>
+            <p class="nav-section">OPERACIONES</p>
+            <a href="/Admin/Stock" class="nav-link @(ruta.Contains("/Admin/Stock") ? "activo" : "")">
+                <span class="icon">📦</span> Stock
+            </a>
+            <a href="/Admin/Facturas" class="nav-link @(ruta.Contains("/Admin/Facturas") ? "activo" : "")">
+                <span class="icon">🧾</span> Facturas
+            </a>
+            <a href="/Admin/Reportes" class="nav-link @(ruta.Contains("/Admin/Reportes") ? "activo" : "")">
+                <span class="icon">📈</span> Reportes
+            </a>
+        }
+        else if (usuario?.RolNombre == "MESERO")
+        {
+            <p class="nav-section">PRINCIPAL</p>
+            <a href="/Mesero/Dashboard" class="nav-link @(ruta.Contains("/Mesero/Dashboard") ? "activo" : "")">
+                <span class="icon">🏠</span> Inicio
+            </a>
+            <a href="/Mesero/TomarPedido" class="nav-link @(ruta.Contains("/Mesero/TomarPedido") ? "activo" : "")">
+                <span class="icon">📋</span> Tomar Pedido
+            </a>
+            <a href="/Mesero/RegistrarCliente" class="nav-link @(ruta.Contains("/Mesero/RegistrarCliente") ? "activo" : "")">
+                <span class="icon">➕</span> Registrar Cliente
+            </a>
+            <a href="/Mesero/AlertaStock" class="nav-link @(ruta.Contains("/Mesero/AlertaStock") ? "activo" : "")">
+                <span class="icon">⚠️</span> Alerta Stock
+            </a>
+        }
+    </nav>
+
+    <div class="sidebar-footer">
+        <a href="/Seguridad/Logout">
+            <span>🚪</span> Cerrar sesión
+        </a>
+    </div>
+</aside>

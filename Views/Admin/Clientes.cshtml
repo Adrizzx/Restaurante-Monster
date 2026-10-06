@@ -1,0 +1,111 @@
+@using RestauranteMonster.Models
+@{
+    ViewData["Title"] = "Clientes";
+    var clientes = ViewBag.Clientes as List<Cliente> ?? new List<Cliente>();
+}
+
+<div class="topbar">
+    <h1>👥 Clientes</h1>
+    <div class="topbar-right">
+        <button onclick="abrirNuevo()" class="btn btn-primary">+ Nuevo Cliente</button>
+    </div>
+</div>
+
+<div style="padding:30px">
+    @if (TempData["Success"] != null) { <div class="alert alert-success">✅ @TempData["Success"]</div> }
+    @if (TempData["Error"]   != null) { <div class="alert alert-error">⚠️ @TempData["Error"]</div> }
+
+    <div class="card">
+        <div class="tabla-wrapper">
+            <table>
+                <thead><tr><th>Nombre</th><th>Correo</th><th>Teléfono</th><th>Dirección</th><th>F. Nac.</th><th>Acciones</th></tr></thead>
+                <tbody>
+                @foreach (var c in clientes)
+                {
+                    <tr>
+                        <td><strong>@c.NombreCompleto</strong></td>
+                        <td>@c.Correo</td>
+                        <td>@(c.Telefono ?? "—")</td>
+                        <td>@(c.Direccion ?? "—")</td>
+                        <td>@(c.FechaNacimiento ?? "—")</td>
+                        <td>
+                            <button onclick="editarCliente(@c.IdCliente,@c.IdUsuario,'@Html.Raw(c.Nombre.Replace("'","\'"))','@Html.Raw(c.Apellido.Replace("'","\'"))','@c.Correo','@(c.Telefono??"")','@(c.Direccion??"")','@(c.FechaNacimiento??"")')"
+                                    class="btn btn-sm btn-secondary">✏️ Editar</button>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="modal-cli" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 id="modal-titulo" class="text-naranja">Nuevo Cliente</h3>
+            <button class="modal-close" onclick="closeModal('modal-cli')">×</button>
+        </div>
+        <form method="post" action="/Admin/Clientes">
+            <input type="hidden" name="idCliente" id="idCliente" value="0" />
+            <input type="hidden" name="idUsuario" id="cIdUsuario" value="0" />
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Nombre *</label>
+                    <input type="text" name="nombre" id="cNombre" class="form-control" required />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Apellido *</label>
+                    <input type="text" name="apellido" id="cApellido" class="form-control" required />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Correo *</label>
+                <input type="email" name="correo" id="cCorreo" class="form-control" required />
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Teléfono</label>
+                    <input type="tel" name="telefono" id="cTelefono" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">F. Nacimiento</label>
+                    <input type="date" name="fechaNacimiento" id="cFechaNac" class="form-control" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Dirección</label>
+                <input type="text" name="direccion" id="cDireccion" class="form-control" />
+            </div>
+            <div class="form-group" id="pass-row">
+                <label class="form-label">Contraseña (mín. 6, solo para nuevo)</label>
+                <input type="password" name="contrasena" id="cContrasena" class="form-control" minlength="6" />
+            </div>
+            <button type="submit" class="btn btn-primary w-100" style="margin-top:8px">💾 Guardar</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function abrirNuevo() {
+    ['idCliente','cIdUsuario'].forEach(id => document.getElementById(id).value = 0);
+    ['cNombre','cApellido','cCorreo','cTelefono','cFechaNac','cDireccion','cContrasena'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('cContrasena').required = true;
+    document.getElementById('modal-titulo').textContent = 'Nuevo Cliente';
+    openModal('modal-cli');
+}
+function editarCliente(id, idU, nom, ape, cor, tel, dir, fn) {
+    document.getElementById('idCliente').value = id;
+    document.getElementById('cIdUsuario').value = idU;
+    document.getElementById('cNombre').value = nom;
+    document.getElementById('cApellido').value = ape;
+    document.getElementById('cCorreo').value = cor;
+    document.getElementById('cTelefono').value = tel;
+    document.getElementById('cDireccion').value = dir;
+    document.getElementById('cFechaNac').value = fn;
+    document.getElementById('cContrasena').value = '';
+    document.getElementById('cContrasena').required = false;
+    document.getElementById('modal-titulo').textContent = 'Editar Cliente';
+    openModal('modal-cli');
+}
+</script>

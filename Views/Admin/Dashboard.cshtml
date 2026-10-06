@@ -1,0 +1,86 @@
+@using RestauranteMonster.Models
+@{
+    ViewData["Title"] = "Dashboard";
+    var stats     = ViewBag.Estadisticas as Dictionary<string, double> ?? new Dictionary<string, double>();
+    var stockBajo = ViewBag.StockBajo    as List<Stock>               ?? new List<Stock>();
+    int pedidos   = (int)(stats.ContainsKey("pedidos") ? stats["pedidos"] : 0);
+    double ventas = stats.ContainsKey("ventas") ? stats["ventas"] : 0;
+}
+
+<div class="topbar">
+    <h1>📊 Dashboard</h1>
+    <div class="topbar-right">
+        @if (stockBajo.Any())
+        {
+            <a href="/Admin/Stock" class="badge-alerta">⚠️ @stockBajo.Count ítems con stock bajo</a>
+        }
+    </div>
+</div>
+
+<div style="padding:30px">
+
+    @if (ViewBag.Error != null) { <div class="alert alert-error">⚠️ @ViewBag.Error</div> }
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">🛒</div>
+            <div class="stat-info">
+                <h3>@pedidos</h3>
+                <p>Pedidos hoy</p>
+            </div>
+        </div>
+        <div class="stat-card verde">
+            <div class="stat-icon">💰</div>
+            <div class="stat-info">
+                <h3>$@ventas.ToString("F2")</h3>
+                <p>Ventas hoy</p>
+            </div>
+        </div>
+        <div class="stat-card naranja">
+            <div class="stat-icon">🍽️</div>
+            <div class="stat-info">
+                <h3>@ViewBag.TotalPlatos</h3>
+                <p>Platos en menú</p>
+            </div>
+        </div>
+        <div class="stat-card azul">
+            <div class="stat-icon">🥤</div>
+            <div class="stat-info">
+                <h3>@ViewBag.TotalBebidas</h3>
+                <p>Bebidas en menú</p>
+            </div>
+        </div>
+    </div>
+
+    @if (stockBajo.Any())
+    {
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">⚠️ Alertas de Stock</h2>
+                <a href="/Admin/Stock" class="btn btn-sm btn-warning">Ver todo</a>
+            </div>
+            <div class="tabla-wrapper">
+                <table>
+                    <thead><tr><th>Ítem</th><th>Tipo</th><th>Cantidad</th><th>Mínimo</th></tr></thead>
+                    <tbody>
+                        @foreach (var s in stockBajo)
+                        {
+                            <tr class="row-stock-bajo">
+                                <td>@s.NombreItem</td>
+                                <td><span class="badge @(s.TipoItem=="PLATO"?"badge-naranja":"badge-azul")">@s.TipoItem</span></td>
+                                <td class="stock-bajo">@s.Cantidad</td>
+                                <td>@s.StockMinimo</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card">
+            <p class="text-center text-muted" style="padding:20px">✅ Todos los ítems tienen stock suficiente.</p>
+        </div>
+    }
+</div>

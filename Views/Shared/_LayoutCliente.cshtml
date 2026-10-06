@@ -1,0 +1,38 @@
+@using RestauranteMonster.Helpers
+@using RestauranteMonster.Models
+@{
+    var usuario = Context.Session.GetObject<Usuario>("usuario");
+    var carrito = Context.Session.GetObject<List<DetallePedido>>("carrito") ?? new List<DetallePedido>();
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@(ViewData["Title"] != null ? ViewData["Title"] + " — " : "")Restaurante Monster</title>
+    <link rel="stylesheet" href="~/css/estilos.css" />
+</head>
+<body>
+<div class="topbar">
+    <h1>🍔 Restaurante Monster</h1>
+    <div class="topbar-right">
+        <span class="text-muted">Hola, <strong>@usuario?.Nombre</strong></span>
+        <a href="/Cliente/Carrito" class="btn btn-naranja btn-sm">
+            🛒 Carrito <span class="badge-alerta" id="header-cart-count" style="margin-left:4px">@carrito.Sum(d => d.Cantidad)</span>
+        </a>
+        <a href="/Seguridad/Logout" class="btn btn-danger btn-sm">Salir</a>
+    </div>
+</div>
+<div class="main-content">
+    @RenderBody()
+</div>
+<script>
+function openModal(id)  { document.getElementById(id).classList.add('activo'); }
+function closeModal(id) { document.getElementById(id).classList.remove('activo'); }
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape')
+        document.querySelectorAll('.modal-overlay.activo').forEach(m => m.classList.remove('activo'));
+});
+</script>
+</body>
+</html>
